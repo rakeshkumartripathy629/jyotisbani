@@ -1,0 +1,161 @@
+
+
+// twilio  accSid,authToken,twilioPhNo
+// const accountSid = "AC2fd689e4954d95bdf6eedca2ba707ac2"
+// const authToken = "3ad44a54bc83eb9f930f758b4e7fa711"
+// const twilioPhoneNumber =""
+// const client = twilio(accountSid,authToken)
+
+
+// .................otp generation step.................//
+                    // const otp =await otpGenerator.generate(4,{ digits: true, alphabets: false, upperCase: false, specialChars: false });
+                    const otp = otpGenerator();
+
+ //.................SENDING OTP via TWILIO (sms)...............//
+                    // client.messages.create({
+                    //     body:`your otp is ${otp}`,
+                    //     from:"twilio phone number",
+                    //     to:"phone number of user"
+                    // }).then(()=>{
+                    //     res.status(200).json({message:"otp sent successfully.."})
+                    // }).catch((error)=>{
+                    //     console.error("failed to send otp",error);
+                    //     res.status(500).json({message:"failed to send otp via sms"})
+                    // })
+
+
+//...................controller section
+verifyUser: (req,res)=>{
+        const {phone_number,otp}= req.body;
+        const storedOtp = "select otp from users where phone_number = ?";
+        db.query(storedOtp,[phone_number],(error,result)=>{
+            if(otp!=result[0].otp) {
+                return res.status(400).json({message:"invalid otp"});
+            }
+            res.status(200).json({message:"user created successfully"});
+        })
+    },
+
+ function otpGenerator(){
+    const number = "0123456789";
+    let otp ="";
+    for(let i = 0;i<4;i++){
+        otp = otp+ number[Math.floor(Math.random()*number.length)];
+    }
+    console.log(otp)
+    return otp;
+}    
+
+
+
+
+
+  redis code..............>>>>>>>>>
+
+
+
+  chatWithAstrologer : async (req,res)=>{
+        const types = req.query.astrologer_type
+
+        if(!types){
+            const data = await redisClient.get("allAstrologers")
+            if(data!=null){
+                console.log("cache hit");
+                res.json(JSON.parse(data))
+
+            }else{
+                const getAllAstrologers = "SELECT * FROM astrologer";
+                console.log("cache miss");
+                db.query(getAllAstrologers,(error,result)=>{
+                    if(error) console.error(error)
+                    redisClient.setEx("allAstrologers",3600,JSON.stringify(result))
+                    res.json(result)
+                })
+            }
+        }else{
+            let typeArray = types;
+            if (!Array.isArray(types)) {
+               typeArray = types.split(",");
+            }
+    
+            const placeholders = typeArray.map(() => "?").join(",");
+            const getAstrologerSql = "SELECT * FROM astrologer WHERE astrologer_type IN (" + placeholders + ")";
+    
+            db.query(getAstrologerSql,typeArray,(error,result)=>{
+                if(error) console.error(error)
+                res.status(200).json({Astrologer:result})
+            })
+        }
+    }, 
+
+
+
+
+
+
+
+
+
+
+
+
+
+    const t = parseInt(currentTime.replace(/:/g,""));
+            const db_t = parseInt(result[0].time.replace(/:/g,""));
+            duration = t-db_t
+            duration = duration.toString().split("")
+            console.log(duration)
+            // if(duration.length===6){
+            //     duration.splice(2, 0, ':');
+            //     duration.splice(5, 0, ':');
+            //     duration = duration.join()
+            // }else if(duration.length===4){
+            //     duration.splice(0, 0, '0');
+            //     duration.splice(1, 0, '0');
+            //     duration.splice(2, 0, ':');
+            //     duration.splice(5, 0, ':');
+            //     duration = duration.join().replace(/,/g,"")
+            // }
+            console.log(duration)
+
+
+
+
+
+
+           else if (
+        result[0].date.getFullYear() === current_date.getFullYear() &&
+        (Math.abs(
+          current_date.getMonth() - result[0].package_validity.getMonth()
+        ) > 0 ||
+          Math.abs(
+            current_date.getDay() - result[0].package_validity.getDay()
+          ) > 0)
+      ) {
+        res.status(200).json({ result: result[0] });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const sql = "select phone_number from users where id= ?"
+    db.query(sql, [user_id], (error, result) => {
+        if (error) console.error(error);
+          console.log( req.userPhone_number)
+          console.log( result[0].phone_number)
+        if (result[0].phone_number === req.userPhone_number) {
+            
+          }else{
+            res.status(400).json({message:"not valid user"})
+          }
+    })
